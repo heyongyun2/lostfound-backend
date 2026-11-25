@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.example.springboot.mapper.ItemMapper">
+
+    <insert id="insertItem" parameterType="org.example.springboot.entity.Item" useGeneratedKeys="true" keyProperty="itemId">
+        INSERT INTO item (item_name, category_id, location, intent, occur_date, unique_mark, description, image_url, user_id, poster_whatsapp, publish_time)
+        VALUES (#{itemName}, #{categoryId}, #{location}, #{intent}, #{occurDate}, #{uniqueMark}, #{description}, #{imageUrl}, #{userId}, #{posterWhatsapp}, #{publishTime})
+    </insert>
+
+    <select id="selectItemList" resultType="org.example.springboot.entity.Item">
+        SELECT item_id, item_name, category_id, location, occur_date, unique_mark, description, image_url, user_id, publish_time, poster_whatsapp, status,intent
+        FROM item t
+        <where>
+            <!-- 核心：前台首页默认只显示管理员审核通过的物品 -->
+            AND t.status = 'approved'
+
+            <!-- 核心新增：如果该物品已经被成功认领（即存在 status = 'approved' 的认领申请），则在首页隐藏 -->
+            AND NOT EXISTS (
+            SELECT 1 FROM claim c
+            WHERE c.item_id = t.item_id AND c.status = 'approved'
+            )
+
+            <if test="itemName != null and itemName != ''">
+                AND t.item_name LIKE CONCAT('%', #{itemName}, '%')
+            </if>
+            <if test="category != null and category != ''">
+                AND t.category_id = #{category}
+            </if>
+            <if test="intent != null and intent != ''">
+                AND t.intent = #{intent}
+            </if>
+            <if test="location != null and location != ''">
+                AND t.location = #{location}
+            </if>
+        </where>
+        <if test="sortDate == 'latest'">
+            ORDER BY t.publish_time DESC
+        </if>
+        <if test="sortDate == 'oldest'">
+            ORDER BY t.publish_time ASC
+        </if>
+    </select>
+    <!-- 根据状态查询物品列表（如获取 pending 待审核列表） -->
+    <select id="selectByStatus" resultType="org.example.springboot.entity.Item">
+        SELECT item_id, item_name, category_id, location, intent, occur_date,
+        unique_mark, description, image_url, publish_time, user_id, status
+        FROM item
+        WHERE status = #{status}
+    </select>
+
+    <!-- 更新物品审核状态（approved / rejected） -->
+    <update id="updateStatus">
+        UPDATE item
+        SET status = #{status}
+        WHERE item_id = #{itemId}
+    </update>
+    <select id="selectItemsByUserId" resultType="org.example.springboot.entity.Item">
+        SELECT
+        i.item_id AS itemId,
+        i.item_name AS itemName,
+        i.category_id AS categoryId,
+        i.location,
+        i.intent,
+        i.status,
+        i.occur_date AS occurDate,
+        i.unique_mark AS uniqueMark,
+        i.description,
+        i.image_url AS imageUrl,
+        i.poster_whatsapp AS posterWhatsapp,
+        i.publish_time AS publishTime
+        FROM item i
+        LEFT JOIN user u ON i.user_id = u.user_id  <!-- 如果你的 item 表存的是 user_id 以外的字段，请在这里调整 -->
+        WHERE u.user_id = #{userId}
+        AND i.status != 'deleted'
+        ORDER BY i.publish_time DESC
+    </select>
+    <!-- 根据 ID 删除发布物品 -->
+    <!-- 逻辑删除：只更新状态，不真正从数据库删掉 -->
+    <update id="deleteById">
+        UPDATE item SET status = 'deleted' WHERE item_id = #{itemId}
+    </update>
+</mapper>

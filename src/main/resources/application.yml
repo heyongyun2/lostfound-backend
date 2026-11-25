@@ -1,0 +1,51 @@
+server:
+  port: 9090
+  address: 0.0.0.0
+
+spring:
+  datasource:
+    username: root
+    password: hyyhyt666666
+    url: jdbc:mysql://localhost:3306/student?serverTimezone=Asia/Shanghai
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+  web:
+    resources:
+      static-locations: classpath:/static/,file:D:/lost_found_images/
+  mail:
+    host: smtp.qq.com
+    port: 465
+    username: 2214550371@qq.com
+    password: nuizywkvcdscdjgi
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+
+
+mybatis:
+  # mapper xml文件存放路径
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    # 控制台打印SQL日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    # 开启下划线自动转驼峰（数据库字段user_name → 实体类userName）
+    map-underscore-to-camel-case: true
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+
+jwt:
+  secret: d295Y3JldVNlY3JldEtleTEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MA==
+  expire: 3600000
+# 打印相关配置
+print:
+  printer-name: 得力 M2000 Series
+  sumatra-path: D:\\soft\\SumatraPDF.exe
+  file-base-path: D:\\print_upload\\
+  mock-mode: true

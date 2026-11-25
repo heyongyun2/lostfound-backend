@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.example.springboot.mapper.EmployeeMapper">
+
+    <select id="selectAll" resultType="org.example.springboot.entity.Employee">
+
+    SELECT id, name, age FROM employee
+    </select>
+    <update id="updataByID" >
+        update employee
+        <set>
+        <if test="name !=null">name=#{name},</if>
+        <if test="age !=null">age=#{age},</if>
+        </set>
+        where id=#{id}
+    </update>
+    <insert id="addData">
+        insert into employee(name,age) values (#{name},#{age})
+    </insert>
+    <delete id="delectdata">
+        delete from employee where id=#{id}
+
+    </delete>
+    <select id="search" resultType="org.example.springboot.entity.Employee">
+select id,name,age from employee where name like CONCAT("%",#{name},"%")
+
+    </select>
+    <select id="login" resultType="org.example.springboot.entity.Employee">
+select name,id from employee where name =#{name} AND id=#{id}
+
+    </select>
+
+</mapper>
